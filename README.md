@@ -1,0 +1,1 @@
+# ethereum-aws-mining
