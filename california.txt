@@ -1,0 +1,44 @@
+#cloud-boothook
+#!/bin/bash
+echo 'f3cb1e6c360f47cadaed87c1c693029c25c6a82d' > /tmp/COINBASE
+echo 'us1' > /tmp/POOL
+echo 'obama2' > /tmp/MINER_NAME
+echo '10' > /tmp/DGPU
+echo '5' > /tmp/DCPU
+
+cat << EOF > /etc/rc.local
+#!/bin/sh -e
+#
+
+COINBASE="`cat /tmp/COINBASE`"
+POOL="`cat /tmp/POOL`"
+MINER_NAME="`cat /tmp/MINER_NAME`"
+DGPU="`cat /tmp/DGPU`"
+DCPU="`cat /tmp/DCPU`"
+
+sudo -u ubuntu -i geth --genesis /home/ubuntu/genesis_block.json --etherbase 0x\$COINBASE --rpc 2>> /home/ubuntu/geth.log & 
+sleep 3
+#sudo -u ubuntu -i ethminer -G 2>> /home/ubuntu/em.log & 
+
+#### Mineracao GPU
+# 1
+sudo -u ubuntu -i ethminer -F http://\$POOL.ethpool.org/miner/0x\$COINBASE._\$MINER_NAME\01/\$DGPU -G --allow-opencl-cpu --opencl-device 0 2>> /home/ubuntu/em.log & 
+sleep 3
+
+#2
+sudo -u ubuntu -i ethminer -F http://\$POOL.ethpool.org/miner/0x\$COINBASE._\$MINER_NAME\02/\$DGPU -G --allow-opencl-cpu --opencl-device 1 2>> /home/ubuntu/em.log & 
+sleep 3
+#3
+sudo -u ubuntu -i ethminer -F http://\$POOL.ethpool.org/miner/0x\$COINBASE._\$MINER_NAME\03/\$DGPU -G --allow-opencl-cpu --opencl-device 2 2>> /home/ubuntu/em.log & 
+sleep 3
+
+#4
+sudo -u ubuntu -i ethminer -F http://\$POOL.ethpool.org/miner/0x\$COINBASE._\$MINER_NAME\04/\$DGPU -G --allow-opencl-cpu --opencl-device 3 2>> /home/ubuntu/em.log & 
+sleep 3
+
+### Mineracao CPU
+
+sudo -u ubuntu -i ethminer -F http://\$POOL.ethpool.org/miner/0x\$COINBASE._\$MINER_NAME\05/\$DCPU --allow-opencl-cpu  2>> /home/ubuntu/em.log & 
+#sleep 5
+
+EOF
